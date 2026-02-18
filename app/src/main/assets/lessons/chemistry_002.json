@@ -1,0 +1,60 @@
+{
+  "id": "chemistry_002",
+  "subject": "chemistry",
+  "title": "Chemical Reactions",
+  "description": "Discover how atoms and molecules interact in chemical reactions, including combustion, synthesis, and decomposition.",
+  "difficulty": "intermediate",
+  "estimatedDuration": 35,
+  "markerId": "marker_chemistry_002",
+  "modelPath": "models/chemical_reactions.glb",
+  "tags": ["reactions", "molecules", "bonds", "chemistry"],
+  "prerequisites": ["chemistry_001"],
+  "labSteps": [
+    {
+      "stepNumber": 1,
+      "title": "Reactants and Products",
+      "instruction": "Observe hydrogen and oxygen molecules (reactants) before the reaction. Tap each molecule to identify it.",
+      "requiresInteraction": true,
+      "interactionType": "TAP",
+      "expectedOutcome": "Distinguish reactants from products in a chemical equation.",
+      "modelHighlighting": { "objectId": "h2_molecule", "color": "#00AAFF", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 2,
+      "title": "Bond Breaking",
+      "instruction": "Chemical reactions start when existing bonds break. Drag the molecules together to start the reaction.",
+      "requiresInteraction": true,
+      "interactionType": "DRAG",
+      "expectedOutcome": "Understand that energy is required to break bonds.",
+      "modelHighlighting": { "objectId": "bond", "color": "#FF9900", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 3,
+      "title": "Bond Formation",
+      "instruction": "New bonds form to create products (H₂O). Rotate to see the water molecules forming.",
+      "requiresInteraction": true,
+      "interactionType": "ROTATE",
+      "expectedOutcome": "Understand that energy is released when new bonds form.",
+      "modelHighlighting": { "objectId": "water_molecule", "color": "#00FF99", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 4,
+      "title": "Conservation of Mass",
+      "instruction": "Count atoms on both sides of the reaction. The total number of atoms is conserved — matter is neither created nor destroyed.",
+      "requiresInteraction": false,
+      "expectedOutcome": "Apply the law of conservation of mass to chemical equations."
+    }
+  ],
+  "quiz": {
+    "id": "quiz_chemistry_002",
+    "title": "Chemical Reactions Quiz",
+    "passingScore": 70,
+    "timeLimit": 0,
+    "questions": [
+      { "id": "q1", "question": "In a chemical reaction, reactants are:", "questionType": "multiple_choice", "options": ["Substances formed after the reaction", "Substances present before the reaction", "Catalysts that speed up the reaction", "Byproducts of a reaction"], "correctAnswer": "Substances present before the reaction", "explanation": "Reactants are the starting materials in a chemical reaction. They are transformed into products during the reaction." },
+      { "id": "q2", "question": "What law states that atoms are neither created nor destroyed in a chemical reaction?", "questionType": "multiple_choice", "options": ["Law of Definite Proportions", "Avogadro's Law", "Law of Conservation of Mass", "Boyle's Law"], "correctAnswer": "Law of Conservation of Mass", "explanation": "The Law of Conservation of Mass states that the total mass of reactants equals the total mass of products in a chemical reaction." },
+      { "id": "q3", "question": "What type of reaction combines two substances to form one product?", "questionType": "multiple_choice", "options": ["Decomposition", "Synthesis (Combination)", "Single displacement", "Combustion"], "correctAnswer": "Synthesis (Combination)", "explanation": "A synthesis reaction combines two or more substances to form a single, more complex product (A + B → AB)." },
+      { "id": "q4", "question": "In the reaction 2H₂ + O₂ → 2H₂O, how many total hydrogen atoms are on the left side?", "questionType": "multiple_choice", "options": ["2", "3", "4", "6"], "correctAnswer": "4", "explanation": "2H₂ means two molecules of hydrogen, each with 2 hydrogen atoms, giving 2×2 = 4 hydrogen atoms on the left side." }
+    ]
+  }
+}

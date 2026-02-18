@@ -1,0 +1,61 @@
+{
+  "id": "biology_001",
+  "subject": "biology",
+  "title": "Cell Structure and Function",
+  "description": "Explore the components of animal and plant cells and their specific functions in 3D.",
+  "difficulty": "intermediate",
+  "estimatedDuration": 45,
+  "markerId": "marker_biology_001",
+  "modelPath": "models/cell_structure.glb",
+  "tags": ["cells", "organelles", "biology", "microscopy"],
+  "prerequisites": [],
+  "labSteps": [
+    {
+      "stepNumber": 1,
+      "title": "Cell Membrane",
+      "instruction": "The cell membrane is a phospholipid bilayer that controls what enters and exits the cell. Rotate to see the full membrane.",
+      "requiresInteraction": true,
+      "interactionType": "ROTATE",
+      "expectedOutcome": "Understand the selective permeability of the cell membrane.",
+      "modelHighlighting": { "objectId": "cell_membrane", "color": "#FFD700", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 2,
+      "title": "Nucleus",
+      "instruction": "The nucleus contains the cell's DNA and controls cell activities. Tap the nucleus to highlight it.",
+      "requiresInteraction": true,
+      "interactionType": "TAP",
+      "expectedOutcome": "Identify the nucleus as the control center of the cell.",
+      "modelHighlighting": { "objectId": "nucleus", "color": "#FF6B6B", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 3,
+      "title": "Mitochondria",
+      "instruction": "Mitochondria produce ATP (energy) through cellular respiration. They are known as the powerhouses of the cell.",
+      "requiresInteraction": false,
+      "expectedOutcome": "Understand ATP production and why cells need mitochondria.",
+      "modelHighlighting": { "objectId": "mitochondria", "color": "#4ECDC4", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 4,
+      "title": "Endoplasmic Reticulum",
+      "instruction": "The ER comes in two forms: rough (with ribosomes, makes proteins) and smooth (makes lipids). Scale the model to see both.",
+      "requiresInteraction": true,
+      "interactionType": "SCALE",
+      "expectedOutcome": "Distinguish between rough and smooth ER functions.",
+      "modelHighlighting": { "objectId": "er", "color": "#9B59B6", "highlightDuration": 3000 }
+    }
+  ],
+  "quiz": {
+    "id": "quiz_biology_001",
+    "title": "Cell Structure Quiz",
+    "passingScore": 70,
+    "timeLimit": 0,
+    "questions": [
+      { "id": "q1", "question": "What is the primary function of the nucleus?", "questionType": "multiple_choice", "options": ["Energy production", "Protein synthesis", "Contains DNA and controls gene expression", "Waste removal"], "correctAnswer": "Contains DNA and controls gene expression", "explanation": "The nucleus houses the cell's genetic material (DNA) and directs all cellular activities by controlling which proteins are made." },
+      { "id": "q2", "question": "Which organelle is called the 'powerhouse of the cell'?", "questionType": "multiple_choice", "options": ["Nucleus", "Ribosome", "Mitochondria", "Golgi apparatus"], "correctAnswer": "Mitochondria", "explanation": "Mitochondria produce ATP (adenosine triphosphate) through cellular respiration, providing energy for all cellular processes." },
+      { "id": "q3", "question": "What does the cell membrane control?", "questionType": "multiple_choice", "options": ["DNA replication", "What enters and exits the cell", "Energy production", "Protein folding"], "correctAnswer": "What enters and exits the cell", "explanation": "The cell membrane is selectively permeable, controlling the movement of substances into and out of the cell." },
+      { "id": "q4", "question": "Rough endoplasmic reticulum is covered with:", "questionType": "multiple_choice", "options": ["Mitochondria", "Ribosomes", "Centrioles", "Vacuoles"], "correctAnswer": "Ribosomes", "explanation": "Rough ER has ribosomes attached to its surface, which is why it appears 'rough' and is involved in protein synthesis." }
+    ]
+  }
+}

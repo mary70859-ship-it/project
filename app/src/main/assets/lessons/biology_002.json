@@ -1,0 +1,60 @@
+{
+  "id": "biology_002",
+  "subject": "biology",
+  "title": "Human Circulatory System",
+  "description": "Follow the journey of blood through the heart, arteries, veins, and capillaries in this immersive 3D lesson.",
+  "difficulty": "intermediate",
+  "estimatedDuration": 40,
+  "markerId": "marker_biology_002",
+  "modelPath": "models/circulatory_system.glb",
+  "tags": ["heart", "blood", "circulation", "anatomy"],
+  "prerequisites": ["biology_001"],
+  "labSteps": [
+    {
+      "stepNumber": 1,
+      "title": "The Heart",
+      "instruction": "The heart is a muscular pump divided into 4 chambers. Tap to see the chambers highlighted.",
+      "requiresInteraction": true,
+      "interactionType": "TAP",
+      "expectedOutcome": "Identify the four chambers: left/right atria and ventricles.",
+      "modelHighlighting": { "objectId": "heart", "color": "#FF0000", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 2,
+      "title": "Arteries",
+      "instruction": "Arteries carry oxygenated blood away from the heart (except pulmonary arteries). They have thick muscular walls.",
+      "requiresInteraction": false,
+      "expectedOutcome": "Distinguish arteries from veins by function and structure.",
+      "modelHighlighting": { "objectId": "arteries", "color": "#FF4444", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 3,
+      "title": "Veins and Capillaries",
+      "instruction": "Veins return deoxygenated blood to the heart. Capillaries are microscopic vessels where gas exchange occurs. Rotate to see the network.",
+      "requiresInteraction": true,
+      "interactionType": "ROTATE",
+      "expectedOutcome": "Understand the role of each vessel type in circulation.",
+      "modelHighlighting": { "objectId": "veins", "color": "#4444FF", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 4,
+      "title": "Pulmonary vs Systemic Circulation",
+      "instruction": "Drag to trace both circulation pathways: pulmonary (heart→lungs→heart) and systemic (heart→body→heart).",
+      "requiresInteraction": true,
+      "interactionType": "DRAG",
+      "expectedOutcome": "Explain the double circulation system in humans."
+    }
+  ],
+  "quiz": {
+    "id": "quiz_biology_002",
+    "title": "Circulatory System Quiz",
+    "passingScore": 70,
+    "timeLimit": 0,
+    "questions": [
+      { "id": "q1", "question": "How many chambers does the human heart have?", "questionType": "multiple_choice", "options": ["2", "3", "4", "6"], "correctAnswer": "4", "explanation": "The human heart has four chambers: right atrium, right ventricle, left atrium, and left ventricle." },
+      { "id": "q2", "question": "What do arteries typically carry?", "questionType": "multiple_choice", "options": ["Deoxygenated blood away from the heart", "Oxygenated blood away from the heart", "Blood toward the heart", "Lymph fluid"], "correctAnswer": "Oxygenated blood away from the heart", "explanation": "Arteries carry oxygenated blood away from the heart to the body's tissues (the pulmonary arteries are the exception)." },
+      { "id": "q3", "question": "Where does gas exchange between blood and tissue occur?", "questionType": "multiple_choice", "options": ["Arteries", "Veins", "Capillaries", "Heart chambers"], "correctAnswer": "Capillaries", "explanation": "Capillaries are microscopic blood vessels with very thin walls, allowing oxygen and nutrients to diffuse into tissues and CO2 to diffuse out." },
+      { "id": "q4", "question": "The pulmonary circulation carries blood between:", "questionType": "multiple_choice", "options": ["Heart and kidneys", "Heart and lungs", "Heart and brain", "Heart and liver"], "correctAnswer": "Heart and lungs", "explanation": "Pulmonary circulation carries deoxygenated blood from the right side of the heart to the lungs and returns oxygenated blood to the left side." }
+    ]
+  }
+}

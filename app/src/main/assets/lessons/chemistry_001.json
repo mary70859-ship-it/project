@@ -1,0 +1,61 @@
+{
+  "id": "chemistry_001",
+  "subject": "chemistry",
+  "title": "Atomic Structure",
+  "description": "Understand the structure of atoms — protons, neutrons, and electrons — with interactive 3D atomic models.",
+  "difficulty": "beginner",
+  "estimatedDuration": 25,
+  "markerId": "marker_chemistry_001",
+  "modelPath": "models/atom_structure.glb",
+  "tags": ["atoms", "particles", "periodic table", "nucleus"],
+  "prerequisites": [],
+  "labSteps": [
+    {
+      "stepNumber": 1,
+      "title": "The Nucleus",
+      "instruction": "The nucleus is at the center of the atom and contains protons (positive charge) and neutrons (no charge). Scale up to see it clearly.",
+      "requiresInteraction": true,
+      "interactionType": "SCALE",
+      "expectedOutcome": "Understand that the nucleus contains protons and neutrons.",
+      "modelHighlighting": { "objectId": "nucleus", "color": "#FF1744", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 2,
+      "title": "Protons",
+      "instruction": "Protons have a positive charge and determine the element's atomic number. Tap a proton to highlight it.",
+      "requiresInteraction": true,
+      "interactionType": "TAP",
+      "expectedOutcome": "Identify that atomic number = number of protons.",
+      "modelHighlighting": { "objectId": "proton", "color": "#FF6600", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 3,
+      "title": "Electrons",
+      "instruction": "Electrons have a negative charge and orbit the nucleus in energy shells. Rotate to see the electron cloud.",
+      "requiresInteraction": true,
+      "interactionType": "ROTATE",
+      "expectedOutcome": "Understand electron shells and why atoms are electrically neutral.",
+      "modelHighlighting": { "objectId": "electron_orbit", "color": "#2196F3", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 4,
+      "title": "Isotopes",
+      "instruction": "Isotopes are atoms of the same element with different numbers of neutrons. Drag to add/remove neutrons from the nucleus.",
+      "requiresInteraction": true,
+      "interactionType": "DRAG",
+      "expectedOutcome": "Define isotopes and understand that neutron number can vary."
+    }
+  ],
+  "quiz": {
+    "id": "quiz_chemistry_001",
+    "title": "Atomic Structure Quiz",
+    "passingScore": 70,
+    "timeLimit": 0,
+    "questions": [
+      { "id": "q1", "question": "Where are electrons located in an atom?", "questionType": "multiple_choice", "options": ["Inside the nucleus", "Orbiting the nucleus in shells", "Between atoms in a bond", "Randomly throughout the atom"], "correctAnswer": "Orbiting the nucleus in shells", "explanation": "Electrons orbit the nucleus in specific energy levels called electron shells or orbitals." },
+      { "id": "q2", "question": "What determines an element's atomic number?", "questionType": "multiple_choice", "options": ["Number of neutrons", "Number of electrons", "Number of protons", "Atomic mass"], "correctAnswer": "Number of protons", "explanation": "The atomic number is the number of protons in the nucleus. Each element has a unique atomic number." },
+      { "id": "q3", "question": "What are isotopes?", "questionType": "multiple_choice", "options": ["Atoms with different numbers of protons", "Atoms with different numbers of neutrons", "Atoms with different numbers of electrons", "Different elements with the same mass"], "correctAnswer": "Atoms with different numbers of neutrons", "explanation": "Isotopes are atoms of the same element (same number of protons) but with different numbers of neutrons." },
+      { "id": "q4", "question": "What is the charge of a neutron?", "questionType": "multiple_choice", "options": ["Positive (+1)", "Negative (-1)", "Neutral (0)", "Varies with element"], "correctAnswer": "Neutral (0)", "explanation": "Neutrons have no electrical charge. This is why adding or removing neutrons creates isotopes without changing the element's identity." }
+    ]
+  }
+}

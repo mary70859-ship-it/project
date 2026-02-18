@@ -1,0 +1,88 @@
+{
+  "id": "physics_001",
+  "subject": "physics",
+  "title": "Newton's Laws of Motion",
+  "description": "Learn about the three fundamental laws governing motion through interactive 3D models and guided lab steps.",
+  "difficulty": "beginner",
+  "estimatedDuration": 30,
+  "markerId": "marker_physics_001",
+  "modelPath": "models/newtons_laws.glb",
+  "tags": ["mechanics", "fundamentals", "forces", "motion"],
+  "prerequisites": [],
+  "labSteps": [
+    {
+      "stepNumber": 1,
+      "title": "First Law – Inertia",
+      "instruction": "Observe how an object at rest stays at rest unless acted upon by a net external force. Tap the stationary block.",
+      "requiresInteraction": true,
+      "interactionType": "TAP",
+      "expectedOutcome": "The block remains still until a force is applied.",
+      "modelHighlighting": { "objectId": "box", "color": "#FF0000", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 2,
+      "title": "Second Law – F=ma",
+      "instruction": "Drag the force arrow to apply different magnitudes. Notice how acceleration changes with force.",
+      "requiresInteraction": true,
+      "interactionType": "DRAG",
+      "expectedOutcome": "Greater force produces greater acceleration.",
+      "modelHighlighting": { "objectId": "force_arrow", "color": "#00FF00", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 3,
+      "title": "Third Law – Action-Reaction",
+      "instruction": "For every action, there is an equal and opposite reaction. Observe the rocket exhaust pushing down as the rocket goes up.",
+      "requiresInteraction": false,
+      "expectedOutcome": "Both action and reaction forces are equal in magnitude.",
+      "modelHighlighting": { "objectId": "rocket", "color": "#0000FF", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 4,
+      "title": "Applying the Laws",
+      "instruction": "Rotate the scene to see all three laws in action simultaneously. Observe the combined system.",
+      "requiresInteraction": true,
+      "interactionType": "ROTATE",
+      "expectedOutcome": "All three laws apply simultaneously in every physical interaction."
+    }
+  ],
+  "quiz": {
+    "id": "quiz_physics_001",
+    "title": "Newton's Laws Quiz",
+    "passingScore": 70,
+    "timeLimit": 0,
+    "questions": [
+      {
+        "id": "q1",
+        "question": "What does Newton's First Law describe?",
+        "questionType": "multiple_choice",
+        "options": ["Gravity between objects", "Inertia of objects", "Momentum conservation", "Energy conversion"],
+        "correctAnswer": "Inertia of objects",
+        "explanation": "The First Law states that objects at rest stay at rest and objects in motion stay in motion unless acted upon by an external force — this property is called inertia."
+      },
+      {
+        "id": "q2",
+        "question": "F = ma represents which of Newton's Laws?",
+        "questionType": "multiple_choice",
+        "options": ["First Law", "Second Law", "Third Law", "Law of Gravitation"],
+        "correctAnswer": "Second Law",
+        "explanation": "F = ma is the mathematical form of Newton's Second Law: force equals mass times acceleration."
+      },
+      {
+        "id": "q3",
+        "question": "If you push a wall, the wall pushes back with equal force. This is Newton's:",
+        "questionType": "multiple_choice",
+        "options": ["First Law", "Second Law", "Third Law", "Law of Inertia"],
+        "correctAnswer": "Third Law",
+        "explanation": "Newton's Third Law states that for every action there is an equal and opposite reaction."
+      },
+      {
+        "id": "q4",
+        "question": "A 5 kg object accelerates at 3 m/s². What net force is acting on it?",
+        "questionType": "multiple_choice",
+        "options": ["1.67 N", "8 N", "15 N", "0 N"],
+        "correctAnswer": "15 N",
+        "explanation": "Using F = ma: F = 5 kg × 3 m/s² = 15 N."
+      }
+    ]
+  }
+}

@@ -1,0 +1,60 @@
+{
+  "id": "physics_002",
+  "subject": "physics",
+  "title": "Projectile Motion",
+  "description": "Explore the physics of objects launched into the air, combining horizontal and vertical motion.",
+  "difficulty": "intermediate",
+  "estimatedDuration": 35,
+  "markerId": "marker_physics_002",
+  "modelPath": "models/projectile.glb",
+  "tags": ["kinematics", "motion", "trajectory", "gravity"],
+  "prerequisites": ["physics_001"],
+  "labSteps": [
+    {
+      "stepNumber": 1,
+      "title": "Launch Angle",
+      "instruction": "Set the launch angle to 45° and observe the parabolic path of the ball.",
+      "requiresInteraction": true,
+      "interactionType": "ROTATE",
+      "expectedOutcome": "45° angle produces maximum range.",
+      "modelHighlighting": { "objectId": "ball", "color": "#FF6600", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 2,
+      "title": "Horizontal Velocity",
+      "instruction": "Notice that horizontal velocity remains constant throughout the flight — there is no horizontal force.",
+      "requiresInteraction": false,
+      "expectedOutcome": "Horizontal velocity is constant (ignoring air resistance).",
+      "modelHighlighting": { "objectId": "h_arrow", "color": "#0099FF", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 3,
+      "title": "Vertical Velocity",
+      "instruction": "Observe that vertical velocity changes due to gravity (9.8 m/s² downward).",
+      "requiresInteraction": true,
+      "interactionType": "TAP",
+      "expectedOutcome": "Vertical velocity decreases going up and increases going down.",
+      "modelHighlighting": { "objectId": "v_arrow", "color": "#FF0099", "highlightDuration": 3000 }
+    },
+    {
+      "stepNumber": 4,
+      "title": "Trajectory Analysis",
+      "instruction": "Drag the launch speed slider to see how initial speed affects the range and height of the projectile.",
+      "requiresInteraction": true,
+      "interactionType": "DRAG",
+      "expectedOutcome": "Greater initial speed increases both range and height proportionally."
+    }
+  ],
+  "quiz": {
+    "id": "quiz_physics_002",
+    "title": "Projectile Motion Quiz",
+    "passingScore": 70,
+    "timeLimit": 0,
+    "questions": [
+      { "id": "q1", "question": "What shape does the trajectory of a projectile follow?", "questionType": "multiple_choice", "options": ["Straight line", "Circle", "Parabola", "Hyperbola"], "correctAnswer": "Parabola", "explanation": "A projectile follows a parabolic path because horizontal velocity is constant while vertical velocity changes due to gravity." },
+      { "id": "q2", "question": "Which angle gives maximum range for a projectile (ignoring air resistance)?", "questionType": "multiple_choice", "options": ["30°", "45°", "60°", "90°"], "correctAnswer": "45°", "explanation": "At 45°, the horizontal and vertical components of velocity are equal, producing maximum range." },
+      { "id": "q3", "question": "In projectile motion (no air resistance), what is the horizontal acceleration?", "questionType": "multiple_choice", "options": ["9.8 m/s²", "0 m/s²", "-9.8 m/s²", "Depends on mass"], "correctAnswer": "0 m/s²", "explanation": "With no air resistance, there is no horizontal force, so horizontal acceleration is zero." },
+      { "id": "q4", "question": "A ball is thrown horizontally from a height. What determines how long it takes to hit the ground?", "questionType": "multiple_choice", "options": ["Horizontal speed", "Mass of the ball", "Height of the launch", "Air resistance only"], "correctAnswer": "Height of the launch", "explanation": "Time of flight depends only on vertical motion, which is determined by the height and gravitational acceleration." }
+    ]
+  }
+}
