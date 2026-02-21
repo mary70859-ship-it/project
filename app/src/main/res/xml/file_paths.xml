@@ -12,4 +12,7 @@
     <files-path
         name="files"
         path="." />
+    <external-cache-path
+        name="external_cache"
+        path="." />
 </paths>

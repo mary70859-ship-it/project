@@ -100,24 +100,12 @@ class MarkerGeneratorActivity : AppCompatActivity() {
     private fun updateMarkerPreview() {
         selectedLesson?.let { lesson ->
             binding.tvMarkerTitle.text = lesson.title
-            val existingFile = markerGenerator.getMarkerFile(lesson.id)
-            if (existingFile != null) {
-                loadMarkerBitmap(existingFile.absolutePath)
+            val bitmap = markerGenerator.getMarkerBitmap(lesson.id)
+            if (bitmap != null) {
+                binding.ivMarkerPreview.setImageBitmap(bitmap)
             } else {
                 binding.ivMarkerPreview.setImageResource(R.drawable.ic_marker_placeholder)
             }
-        }
-    }
-
-    private fun loadMarkerBitmap(filePath: String) {
-        try {
-            val file = java.io.File(filePath)
-            if (file.exists()) {
-                val bitmap = android.graphics.BitmapFactory.decodeFile(filePath)
-                binding.ivMarkerPreview.setImageBitmap(bitmap)
-            }
-        } catch (e: Exception) {
-            binding.ivMarkerPreview.setImageResource(R.drawable.ic_marker_placeholder)
         }
     }
 
