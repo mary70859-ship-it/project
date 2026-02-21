@@ -23,7 +23,6 @@ import com.google.ar.core.*
 import io.github.sceneview.ar.ArSceneView
 import io.github.sceneview.ar.arcore.getHitAtScreenPoint
 import io.github.sceneview.ar.arcore.getRotation
-import io.github.sceneview.ar.arcore.setSession()
 import io.github.sceneview.ar.node.ArModelNode
 import io.github.sceneview.ar.node.PlacementMode
 import kotlinx.coroutines.launch
