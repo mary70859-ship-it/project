@@ -20,6 +20,7 @@ import com.ar.education.databinding.ActivityArViewerBinding
 import com.ar.education.progress.ProgressRepository
 import com.ar.education.ui.QuizActivity
 import com.google.ar.core.*
+import io.github.sceneview.ar.ArFrame
 import io.github.sceneview.ar.node.ArModelNode
 import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.ar.ArSceneView
@@ -129,7 +130,7 @@ class ARViewerActivity : AppCompatActivity() {
 
         // Set up AR frame update listener for marker tracking
         if (isMarkerMode) {
-            arSceneView.onArFrame = { arFrame ->
+            arSceneView.onArFrame = { arFrame: ArFrame ->
                 updateAugmentedImages(arFrame)
             }
         }
@@ -181,7 +182,7 @@ class ARViewerActivity : AppCompatActivity() {
         }
     }
 
-    private fun updateAugmentedImages(arFrame: io.github.sceneview.ar.ArFrame) {
+    private fun updateAugmentedImages(arFrame: ArFrame) {
         try {
             val frame = arFrame.frame
             val session = arFrame.session ?: return
