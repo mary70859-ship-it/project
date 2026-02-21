@@ -2,6 +2,8 @@ package com.ar.education.ar
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.GestureDetector
+import android.view.MotionEvent
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -13,7 +15,6 @@ import com.ar.education.databinding.ActivityArViewerBinding
 import com.ar.education.progress.ProgressRepository
 import com.ar.education.ui.QuizActivity
 import com.google.ar.core.Anchor
-import com.google.ar.core.HitResult
 import io.github.sceneview.ar.node.ArModelNode
 import io.github.sceneview.ar.node.PlacementMode
 import io.github.sceneview.ar.ArSceneView
@@ -27,6 +28,7 @@ class ARViewerActivity : AppCompatActivity() {
     private var currentLesson: Lesson? = null
     private var currentStepIndex = 0
     private var modelNode: ArModelNode? = null
+    private lateinit var gestureDetector: GestureDetector
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -78,10 +80,19 @@ class ARViewerActivity : AppCompatActivity() {
     }
 
     private fun setupAR() {
-        arSceneView.onArTap = { hitResult: HitResult? ->
-            if (modelNode == null) {
-                hitResult?.createAnchor()?.let { loadModel(it) }
+        gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
+            override fun onSingleTapUp(e: MotionEvent): Boolean {
+                if (modelNode == null) {
+                    val hitResult = arSceneView.hitTest(e.x, e.y)
+                    hitResult?.let { loadModel(it.anchor) }
+                }
+                return true
             }
+        })
+
+        arSceneView.setOnTouchListener { _, event ->
+            gestureDetector.onTouchEvent(event)
+            false
         }
     }
 
