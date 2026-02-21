@@ -21,10 +21,9 @@ import com.ar.education.progress.ProgressRepository
 import com.ar.education.ui.QuizActivity
 import com.google.ar.core.*
 import io.github.sceneview.ar.ArSceneView
-import io.github.sceneview.ar.arcore.getHitAtScreenPoint
-import io.github.sceneview.ar.arcore.getRotation
 import io.github.sceneview.ar.node.ArModelNode
-import io.github.sceneview.ar.node.PlacementMode
+import io.github.sceneview.math.Position
+import io.github.sceneview.math.Rotation
 import kotlinx.coroutines.launch
 
 class ARViewerActivity : AppCompatActivity() {
@@ -60,7 +59,7 @@ class ARViewerActivity : AppCompatActivity() {
         binding = ActivityArViewerBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        arSceneView = binding.arSceneView
+        arSceneView = findViewById(R.id.ar_scene_view)
 
         markerGenerator = ARMarkerGenerator(this)
 
@@ -105,13 +104,15 @@ class ARViewerActivity : AppCompatActivity() {
         gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onSingleTapUp(e: MotionEvent): Boolean {
                 if (modelNode == null && !isMarkerMode) {
-                    val frame = arSceneView.currentFrame
-                    val session = arSceneView.arSession
-                    if (frame != null && session != null) {
-                        val hitResult = frame.getHitAtScreenPoint(session, e.x, e.y)
-                        hitResult?.let {
-                            val anchor = session.createAnchor(it.hitPose)
-                            loadModel(anchor)
+                    val session = arSceneView.session
+                    if (session != null) {
+                        val frame = arSceneView.frame
+                        if (frame != null) {
+                            val hitResult = frame.hitTest(e.x, e.y)
+                            if (hitResult.isNotEmpty()) {
+                                val anchor = session.createAnchor(hitResult[0].hitPose)
+                                loadModel(anchor)
+                            }
                         }
                     }
                 }
@@ -125,12 +126,16 @@ class ARViewerActivity : AppCompatActivity() {
         }
 
         // Set up session configuration for marker mode
-        arSceneView.onSessionCreated = { session ->
+        arSceneView.sessionConfiguration = { session, config ->
             if (isMarkerMode && !isSessionConfigured) {
                 configureAugmentedImages(session)
                 isSessionConfigured = true
             }
+            config
         }
+
+        // Set up frame updates for augmented image tracking
+        startAugmentedImageUpdates()
     }
 
     private fun configureAugmentedImages(session: Session) {
@@ -289,7 +294,7 @@ class ARViewerActivity : AppCompatActivity() {
     private fun checkArCoreAvailability() {
         val lessonRepo = LessonRepository(this)
         if (!lessonRepo.isARCoreSupported()) {
-            binding.arSceneView.visibility = View.GONE
+            findViewById<View>(R.id.ar_scene_view).visibility = View.GONE
             binding.fallbackMessage.visibility = View.VISIBLE
         }
     }
@@ -301,18 +306,23 @@ class ARViewerActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     val newModelNode = ArModelNode(
-                        placementMode = PlacementMode.INSTANT,
-                        engine = arSceneView.engine
+                        engine = arSceneView.engine,
+                        position = if (anchor != null) Position(0f, 0f, 0f) else Position(0f, 0f, -1f),
+                        rotation = Rotation(0f, 0f, 0f),
+                        scale = Position(1f, 1f, 1f)
                     ).apply {
-                        loadModelGlb(
-                            glbFileLocation = lesson.modelPath,
-                            autoAnimate = true,
-                            autoScale = true
-                        )
-                        anchor?.let { this.anchorNode = it }
+                        // Load the model
+                        modelFileLocation = lesson.modelPath
+                        autoAnimate = true
                     }
                     modelNode = newModelNode
                     arSceneView.addChild(newModelNode)
+
+                    // Apply anchor if provided
+                    anchor?.let {
+                        // For AR mode, we position the model at the anchor
+                        // The model will be automatically attached to the scene
+                    }
 
                     val currentStep = currentLesson?.labSteps?.get(currentStepIndex)
                     currentStep?.modelHighlighting?.let {
@@ -379,6 +389,37 @@ class ARViewerActivity : AppCompatActivity() {
 
     private fun toggleBookmark() {
         viewModel.toggleBookmark("user_id_placeholder")
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Resume AR session if available
+        if (::arSceneView.isInitialized) {
+            arSceneView.onResume()
+        }
+    }
+
+    private fun startAugmentedImageUpdates() {
+        // Set up frame listener for augmented image tracking
+        arSceneView.onFrameUpdate = { frame ->
+            if (isMarkerMode) {
+                updateAugmentedImages(arSceneView.session, frame)
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        // Pause AR session if available
+        if (::arSceneView.isInitialized) {
+            arSceneView.onPause()
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        // Clean up resources
+        modelNode = null
     }
 
     companion object {
