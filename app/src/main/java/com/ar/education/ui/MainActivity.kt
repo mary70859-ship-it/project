@@ -6,6 +6,8 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ar.education.R
+import com.ar.education.ar.ARViewerActivity
+import com.ar.education.ar.MarkerGalleryActivity
 import com.ar.education.ar.MarkerGeneratorActivity
 import com.ar.education.data.Lesson
 import com.ar.education.databinding.ActivityMainBinding
@@ -53,6 +55,17 @@ class MainActivity : AppCompatActivity() {
     private fun setupFab() {
         binding.fabGenerateMarkers.setOnClickListener {
             startActivity(Intent(this, MarkerGeneratorActivity::class.java))
+        }
+        
+        binding.fabScanMarkers.setOnClickListener {
+            // Start AR viewer in marker scanning mode
+            val intent = Intent(this, ARViewerActivity::class.java)
+            // No lesson ID means marker scanning mode
+            startActivity(intent)
+        }
+        
+        binding.fabMarkerGallery.setOnClickListener {
+            startActivity(Intent(this, MarkerGalleryActivity::class.java))
         }
     }
 
