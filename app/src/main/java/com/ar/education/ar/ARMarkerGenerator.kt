@@ -3,7 +3,9 @@ package com.ar.education.ar
 import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Color
+import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
@@ -11,6 +13,7 @@ import com.ar.education.data.Lesson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileDescriptor
 import java.io.FileOutputStream
 import java.io.OutputStream
 import kotlin.math.abs
@@ -157,6 +160,7 @@ class ARMarkerGenerator(private val context: Context) {
                     put(MediaStore.MediaColumns.DISPLAY_NAME, fileName)
                     put(MediaStore.MediaColumns.MIME_TYPE, "image/png")
                     put(MediaStore.MediaColumns.RELATIVE_PATH, Environment.DIRECTORY_PICTURES + "/ARMarkers")
+                    put(MediaStore.Images.Media.DESCRIPTION, "AR Marker for ${fileName.removeSuffix(".png")}")
                 }
 
                 val uri = context.contentResolver.insert(
@@ -191,23 +195,150 @@ class ARMarkerGenerator(private val context: Context) {
     }
 
     fun getMarkerFile(lessonId: String): File? {
-        val directory = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "ARMarkers"
-        )
-        val file = File(directory, "marker_$lessonId.png")
-        return if (file.exists()) file else null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // On Android 10+, use MediaStore to find the marker
+            val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
+            val selectionArgs = arrayOf("marker_$lessonId.png", "${Environment.DIRECTORY_PICTURES}/ARMarkers/")
+
+            val projection = arrayOf(MediaStore.MediaColumns._ID)
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+                    val uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+                    try {
+                        // Create a temp file from the URI
+                        context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                            val fileDescriptor = pfd.fileDescriptor
+                            val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                            // Create a temp file to return
+                            val tempFile = File(context.cacheDir, "temp_marker_$lessonId.png")
+                            tempFile.outputStream().use { out ->
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                            }
+                            return tempFile
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                null
+            }
+        } else {
+            // On Android 9 and below, use file-based approach
+            val directory = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "ARMarkers"
+            )
+            val file = File(directory, "marker_$lessonId.png")
+            return if (file.exists()) file else null
+        }
+        return null
     }
 
     fun getAllMarkerFiles(): List<File> {
-        val directory = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "ARMarkers"
-        )
-        return if (directory.exists()) {
-            directory.listFiles { file -> file.extension == "png" }?.toList() ?: emptyList()
+        return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // On Android 10+, use MediaStore to find all markers
+            val selection = "${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
+            val selectionArgs = arrayOf("${Environment.DIRECTORY_PICTURES}/ARMarkers/")
+
+            val projection = arrayOf(
+                MediaStore.MediaColumns._ID,
+                MediaStore.MediaColumns.DISPLAY_NAME
+            )
+
+            val markerFiles = mutableListOf<File>()
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                val idColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID)
+                val nameColumn = cursor.getColumnIndexOrThrow(MediaStore.MediaColumns.DISPLAY_NAME)
+
+                while (cursor.moveToNext()) {
+                    val id = cursor.getLong(idColumn)
+                    val fileName = cursor.getString(nameColumn)
+                    val uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+
+                    try {
+                        context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                            val fileDescriptor = pfd.fileDescriptor
+                            val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                            // Create a temp file for each marker
+                            val tempFile = File(context.cacheDir, "temp_$fileName")
+                            tempFile.outputStream().use { out ->
+                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                            }
+                            markerFiles.add(tempFile)
+                        }
+                    } catch (e: Exception) {
+                        // Skip files that can't be read
+                    }
+                }
+            }
+            markerFiles
         } else {
-            emptyList()
+            // On Android 9 and below, use file-based approach
+            val directory = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "ARMarkers"
+            )
+            if (directory.exists()) {
+                directory.listFiles { file -> file.extension == "png" }?.toList() ?: emptyList()
+            } else {
+                emptyList()
+            }
         }
+    }
+
+    fun getMarkerBitmap(lessonId: String): Bitmap? {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            // On Android 10+, use MediaStore to find the marker
+            val selection = "${MediaStore.MediaColumns.DISPLAY_NAME} = ? AND ${MediaStore.MediaColumns.RELATIVE_PATH} = ?"
+            val selectionArgs = arrayOf("marker_$lessonId.png", "${Environment.DIRECTORY_PICTURES}/ARMarkers/")
+
+            val projection = arrayOf(MediaStore.MediaColumns._ID)
+            context.contentResolver.query(
+                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+                projection,
+                selection,
+                selectionArgs,
+                null
+            )?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val id = cursor.getLong(cursor.getColumnIndexOrThrow(MediaStore.MediaColumns._ID))
+                    val uri = Uri.withAppendedPath(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id.toString())
+                    try {
+                        context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
+                            return BitmapFactory.decodeFileDescriptor(pfd.fileDescriptor)
+                        }
+                    } catch (e: Exception) {
+                        null
+                    }
+                }
+                null
+            }
+        } else {
+            // On Android 9 and below, use file-based approach
+            val directory = File(
+                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                "ARMarkers"
+            )
+            val file = File(directory, "marker_$lessonId.png")
+            return if (file.exists()) {
+                BitmapFactory.decodeFile(file.absolutePath)
+            } else {
+                null
+            }
+        }
+        return null
     }
 }
