@@ -36,4 +36,8 @@
     
     <!-- Info Background -->
     <color name="info_background">#E3F2FD</color>
+    
+    <!-- Marker Generator -->
+    <color name="divider">#E0E0E0</color>
+    <color name="marker_placeholder_bg">#F5F5F5</color>
 </resources>

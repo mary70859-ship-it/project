@@ -88,4 +88,20 @@
     <string name="score_format">Score: %1$d%%</string>
     <string name="score_detail">Score: %1$d%% (%2$d/%3$d)</string>
     
+    <!-- AR Marker Generator -->
+    <string name="ar_marker_generator">AR Marker Generator</string>
+    <string name="marker_instructions">Select a lesson to generate its AR marker. Print the marker and use it with the AR camera to launch the lesson.</string>
+    <string name="generate_marker">Generate Marker</string>
+    <string name="generate_all_markers">Generate All Markers</string>
+    <string name="view_all_markers">View All Markers</string>
+    <string name="marker_preview">Marker preview</string>
+    <string name="select_lesson_first">Please select a lesson first</string>
+    <string name="no_lessons_available">No lessons available</string>
+    <string name="no_markers_generated">No markers have been generated yet</string>
+    <string name="marker_saved">Marker saved successfully</string>
+    <string name="markers_gallery">Markers Gallery</string>
+    <string name="share_marker">Share Marker</string>
+    <string name="delete_marker">Delete Marker</string>
+    <string name="marker_deleted">Marker deleted</string>
+    
 </resources>

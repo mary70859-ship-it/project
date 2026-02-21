@@ -6,6 +6,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.ar.education.R
+import com.ar.education.ar.MarkerGeneratorActivity
 import com.ar.education.data.Lesson
 import com.ar.education.databinding.ActivityMainBinding
 import com.ar.education.ui.LessonAdapter
@@ -27,6 +28,7 @@ class MainActivity : AppCompatActivity() {
 
         setupRecyclerView()
         setupFilterButtons()
+        setupFab()
         observeViewModel()
 
         viewModel.loadLessons()
@@ -46,6 +48,12 @@ class MainActivity : AppCompatActivity() {
         binding.btnBiology.setOnClickListener { viewModel.filterBySubject("biology") }
         binding.btnChemistry.setOnClickListener { viewModel.filterBySubject("chemistry") }
         binding.btnProgress.setOnClickListener { startActivity(Intent(this, ProgressActivity::class.java)) }
+    }
+
+    private fun setupFab() {
+        binding.fabGenerateMarkers.setOnClickListener {
+            startActivity(Intent(this, MarkerGeneratorActivity::class.java))
+        }
     }
 
     private fun observeViewModel() {
