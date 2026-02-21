@@ -37,7 +37,7 @@ class QuizActivity : AppCompatActivity() {
     }
 
     private fun setupViews() {
-        binding.btnNextQuestion.setOnClickListener { nextQuestion() }
+        binding.btnNext.setOnClickListener { nextQuestion() }
     }
 
     private fun observeViewModel() {
@@ -50,25 +50,25 @@ class QuizActivity : AppCompatActivity() {
     private fun displayQuestion(index: Int) {
         val question = quizData?.questions?.get(index) ?: return
 
-        binding.tvQuestionText.text = question.question
-        binding.rgOptions.removeAllViews()
+        binding.tvQuestion.text = question.question
+        binding.radioGroupOptions.removeAllViews()
 
         question.options.forEachIndexed { i, option ->
             val radioButton = RadioButton(this)
             radioButton.text = option
             radioButton.id = i
-            binding.rgOptions.addView(radioButton)
+            binding.radioGroupOptions.addView(radioButton)
         }
     }
 
     private fun nextQuestion() {
-        val selectedOptionId = binding.rgOptions.checkedRadioButtonId
+        val selectedOptionId = binding.radioGroupOptions.checkedRadioButtonId
         if (selectedOptionId == -1) {
             Toast.makeText(this, "Please select an answer", Toast.LENGTH_SHORT).show()
             return
         }
 
-        val selectedText = binding.rgOptions.findViewById<RadioButton>(selectedOptionId)?.text?.toString() ?: return
+        val selectedText = binding.radioGroupOptions.findViewById<RadioButton>(selectedOptionId)?.text?.toString() ?: return
         viewModel.submitAnswer(currentQuestionIndex, selectedText)
 
         currentQuestionIndex++
