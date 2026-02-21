@@ -1,19 +1,21 @@
 # KSP Plugin Version Fix Summary
 
 ## Problem
-The project was failing Gradle sync with the error:
+The project was failing with a KSP runtime error:
 ```
-Plugin [id: 'com.google.devtools.ksp', version: '2.1.21-1.0.29', apply: false] was not found in any of the following sources:
-- Gradle Core Plugins (plugin is not in 'org.gradle' namespace)
-- Included Builds (No included builds contain this plugin)
-- Plugin Repositories (could not resolve plugin artifact 'com.google.devtools.ksp:com.google.devtools.ksp.gradle.plugin:2.1.21-1.0.29')
+java.lang.NoSuchMethodError: 'org.jetbrains.kotlin.config.LanguageVersionSettings org.jetbrains.kotlin.codegen.state.KotlinTypeMapper$Companion.getLANGUAGE_VERSION_SETTINGS_DEFAULT()'
+    at com.google.devtools.ksp.processing.impl.ResolverImpl.<init>(ResolverImpl.kt:147)
 ```
 
 ## Root Cause
-The KSP (Kotlin Symbol Processing) plugin version `2.1.21-1.0.29` does not exist. This version was incorrectly specified based on the Kotlin version `2.1.21`, but the correct KSP versioning scheme for Kotlin 2.1.x uses the base Kotlin version (2.1.0) followed by the KSP version number.
+There was a version compatibility issue between Kotlin and KSP. The project was using:
+- Kotlin 2.1.21
+- KSP 2.1.0-1.0.28
+
+Kotlin 2.1.21 introduced breaking API changes that are incompatible with KSP 2.1.0-1.0.28, which was designed to work with Kotlin 2.1.0 base version. The KSP versioning scheme uses the base Kotlin version (2.1.0) followed by the KSP version number.
 
 ## Solution
-Updated the KSP plugin version from `2.1.21-1.0.29` to `2.1.0-1.0.28`, which is the correct version compatible with Kotlin 2.1.21.
+Downgraded Kotlin from 2.1.21 to 2.1.0 to ensure full compatibility with KSP 2.1.0-1.0.28.
 
 ## Changes Made
 
@@ -23,7 +25,7 @@ Updated the KSP plugin version from `2.1.21-1.0.29` to `2.1.0-1.0.28`, which is 
 plugins {
     id 'com.android.application' version '8.6.0' apply false
     id 'org.jetbrains.kotlin.android' version '2.1.21' apply false
-    id 'com.google.devtools.ksp' version '2.1.21-1.0.29' apply false
+    id 'com.google.devtools.ksp' version '2.1.0-1.0.28' apply false
 }
 ```
 
@@ -31,7 +33,7 @@ plugins {
 ```gradle
 plugins {
     id 'com.android.application' version '8.6.0' apply false
-    id 'org.jetbrains.kotlin.android' version '2.1.21' apply false
+    id 'org.jetbrains.kotlin.android' version '2.1.0' apply false
     id 'com.google.devtools.ksp' version '2.1.0-1.0.28' apply false
 }
 ```
@@ -40,15 +42,11 @@ plugins {
 
 The KSP version follows the pattern: `<kotlin-version>-<ksp-version>`
 
-For Kotlin 2.1.x versions (including 2.1.21), the compatible KSP version is:
-- **KSP 2.1.0-1.0.28** - Latest stable release for Kotlin 2.1.x
+For this fix, we use:
+- **Kotlin 2.1.0** - Stable base version
+- **KSP 2.1.0-1.0.28** - Matching KSP version
 
-This version is compatible with:
-- Kotlin 2.1.0
-- Kotlin 2.1.10
-- Kotlin 2.1.20
-- Kotlin 2.1.21
-- Other Kotlin 2.1.x patch versions
+This combination is fully compatible and resolves the NoSuchMethodError.
 
 ## Usage in Project
 
