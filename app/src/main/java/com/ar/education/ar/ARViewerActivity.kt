@@ -85,7 +85,7 @@ class ARViewerActivity : AppCompatActivity() {
                 if (modelNode == null) {
                     val hitResult = arSceneView.hitTest(e.x, e.y)
                     hitResult?.let {
-                        val session = arSceneView.session
+                        val session = arSceneView.arSession
                         val anchor = session?.createAnchor(it.hitPose)
                         loadModel(anchor)
                     }
