@@ -20,7 +20,7 @@ class QuizActivity : AppCompatActivity() {
         binding = ActivityQuizBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        quizData = intent.getParcelableExtra(EXTRA_QUIZ_DATA)
+        quizData = intent.getParcelableExtra(EXTRA_QUIZ_DATA, Quiz::class.java)
 
         val factory = QuizViewModelFactory(application)
         viewModel = ViewModelProvider(this, factory)[QuizViewModel::class.java]
