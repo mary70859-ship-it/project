@@ -4,7 +4,12 @@ import android.content.ContentValues
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Paint
+import android.graphics.RectF
+import android.graphics.Shader
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
@@ -13,17 +18,16 @@ import com.ar.education.data.Lesson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.io.FileDescriptor
 import java.io.FileOutputStream
-import java.io.OutputStream
 import kotlin.math.abs
+import kotlin.math.sin
 
 class ARMarkerGenerator(private val context: Context) {
 
     companion object {
         private const val MARKER_SIZE = 1024
-        private const val MARKER_BORDER_SIZE = 64
-        private const val MARKER_DATA_SIZE = 24
+        private const val MARKER_BORDER_SIZE = 80
+        private const val MARKER_DATA_SIZE = 20
         private const val CELL_SIZE = (MARKER_SIZE - 2 * MARKER_BORDER_SIZE) / MARKER_DATA_SIZE
     }
 
@@ -55,22 +59,33 @@ class ARMarkerGenerator(private val context: Context) {
 
     private fun createMarkerBitmap(lessonId: String, title: String): Bitmap {
         val bitmap = Bitmap.createBitmap(MARKER_SIZE, MARKER_SIZE, Bitmap.Config.ARGB_8888)
-        val canvas = android.graphics.Canvas(bitmap)
+        val canvas = Canvas(bitmap)
 
+        // Draw white background
         canvas.drawColor(Color.WHITE)
 
-        val borderPaint = android.graphics.Paint().apply {
+        // Draw border with gradient for better visibility
+        val borderPaint = Paint().apply {
             color = Color.BLACK
-            style = android.graphics.Paint.Style.FILL
+            style = Paint.Style.FILL
         }
+        // Top border
         canvas.drawRect(0f, 0f, MARKER_SIZE.toFloat(), MARKER_BORDER_SIZE.toFloat(), borderPaint)
+        // Bottom border
         canvas.drawRect(0f, (MARKER_SIZE - MARKER_BORDER_SIZE).toFloat(), MARKER_SIZE.toFloat(), MARKER_SIZE.toFloat(), borderPaint)
+        // Left border
         canvas.drawRect(0f, 0f, MARKER_BORDER_SIZE.toFloat(), MARKER_SIZE.toFloat(), borderPaint)
+        // Right border
         canvas.drawRect((MARKER_SIZE - MARKER_BORDER_SIZE).toFloat(), 0f, MARKER_SIZE.toFloat(), MARKER_SIZE.toFloat(), borderPaint)
 
+        // Generate and draw the data pattern
         val dataPattern = generateDataPattern(lessonId)
         drawPattern(canvas, dataPattern)
 
+        // Draw unique markers in corners for easier detection
+        drawCornerMarkers(canvas, lessonId)
+
+        // Draw lesson info at the bottom
         drawLessonInfo(canvas, lessonId, title)
 
         return bitmap
@@ -79,23 +94,31 @@ class ARMarkerGenerator(private val context: Context) {
     private fun generateDataPattern(lessonId: String): Array<IntArray> {
         val pattern = Array(MARKER_DATA_SIZE) { IntArray(MARKER_DATA_SIZE) }
 
+        // Generate multiple hashes for different parts of the pattern
         val hash1 = generateHash(lessonId, 0)
         val hash2 = generateHash(lessonId, 1)
         val hash3 = generateHash(lessonId, 2)
+        val hash4 = generateHash(lessonId, 3)
 
         for (y in 0 until MARKER_DATA_SIZE) {
             for (x in 0 until MARKER_DATA_SIZE) {
-                if (isBorderCell(x, y)) {
+                // Skip border area (3 cells)
+                if (x < 3 || x >= MARKER_DATA_SIZE - 3 || y < 3 || y >= MARKER_DATA_SIZE - 3) {
+                    // Create checkerboard pattern in border for easier detection
                     pattern[y][x] = if ((x + y) % 2 == 0) 1 else 0
                 } else if (isTimingCell(x, y)) {
+                    // Alternating pattern in timing cells
                     pattern[y][x] = (x + y) % 2
                 } else {
+                    // Use different hash functions for different regions
+                    // This creates more distinct patterns
                     val hash = when {
-                        x < MARKER_DATA_SIZE / 3 -> hash1
-                        x < 2 * MARKER_DATA_SIZE / 3 -> hash2
+                        y < MARKER_DATA_SIZE / 3 -> hash1
+                        y < 2 * MARKER_DATA_SIZE / 3 -> hash2
                         else -> hash3
                     }
-                    val index = (abs(hash) + x + y) % 2
+                    // Create varied pattern based on position and hash
+                    val index = (abs(hash) + x * 7 + y * 13) % 2
                     pattern[y][x] = index
                 }
             }
@@ -109,25 +132,24 @@ class ARMarkerGenerator(private val context: Context) {
         for (char in input) {
             hash = hash * 31 + char.code
         }
+        // Add some variation
+        hash = (hash shr 3) + (hash * 17)
         return hash
     }
 
-    private fun isBorderCell(x: Int, y: Int): Boolean {
-        return x < 3 || x >= MARKER_DATA_SIZE - 3 || y < 3 || y >= MARKER_DATA_SIZE - 3
-    }
-
     private fun isTimingCell(x: Int, y: Int): Boolean {
-        return (x == 6 || x == MARKER_DATA_SIZE - 7 || y == 6 || y == MARKER_DATA_SIZE - 7)
+        // Create timing patterns at specific rows and columns
+        return (x == 7 || x == MARKER_DATA_SIZE - 8 || y == 7 || y == MARKER_DATA_SIZE - 8)
     }
 
-    private fun drawPattern(canvas: android.graphics.Canvas, pattern: Array<IntArray>) {
-        val blackPaint = android.graphics.Paint().apply {
+    private fun drawPattern(canvas: Canvas, pattern: Array<IntArray>) {
+        val blackPaint = Paint().apply {
             color = Color.BLACK
-            style = android.graphics.Paint.Style.FILL
+            style = Paint.Style.FILL
         }
-        val whitePaint = android.graphics.Paint().apply {
+        val whitePaint = Paint().apply {
             color = Color.WHITE
-            style = android.graphics.Paint.Style.FILL
+            style = Paint.Style.FILL
         }
 
         for (y in 0 until MARKER_DATA_SIZE) {
@@ -140,17 +162,62 @@ class ARMarkerGenerator(private val context: Context) {
         }
     }
 
-    private fun drawLessonInfo(canvas: android.graphics.Canvas, lessonId: String, title: String) {
-        val textPaint = android.graphics.Paint().apply {
+    private fun drawCornerMarkers(canvas: Canvas, lessonId: String) {
+        val cornerSize = CELL_SIZE * 2
+        val hash = generateHash(lessonId, 0)
+        
+        val blackPaint = Paint().apply {
             color = Color.BLACK
-            textSize = 28f
-            textAlign = android.graphics.Paint.Align.CENTER
+            style = Paint.Style.FILL
+        }
+        val whitePaint = Paint().apply {
+            color = Color.WHITE
+            style = Paint.Style.FILL
+        }
+        
+        // Draw corner squares with unique patterns based on lesson ID
+        val corners = listOf(
+            Triple(MARKER_BORDER_SIZE + CELL_SIZE, MARKER_BORDER_SIZE + CELL_SIZE, hash % 2),
+            Triple(MARKER_SIZE - MARKER_BORDER_SIZE - cornerSize - CELL_SIZE, MARKER_BORDER_SIZE + CELL_SIZE, (hash / 2) % 2),
+            Triple(MARKER_BORDER_SIZE + CELL_SIZE, MARKER_SIZE - MARKER_BORDER_SIZE - cornerSize - CELL_SIZE, (hash / 3) % 2),
+            Triple(MARKER_SIZE - MARKER_BORDER_SIZE - cornerSize - CELL_SIZE, MARKER_SIZE - MARKER_BORDER_SIZE - cornerSize - CELL_SIZE, (hash / 4) % 2)
+        )
+        
+        for ((x, y, patternBit) in corners) {
+            // Draw outer square
+            val outerPaint = if (patternBit == 1) blackPaint else whitePaint
+            canvas.drawRect(x.toFloat(), y.toFloat(), (x + cornerSize).toFloat(), (y + cornerSize).toFloat(), outerPaint)
+            
+            // Draw inner contrasting square
+            val innerPaint = if (patternBit == 1) whitePaint else blackPaint
+            val innerPadding = cornerSize / 4
+            canvas.drawRect(
+                (x + innerPadding).toFloat(), 
+                (y + innerPadding).toFloat(), 
+                (x + cornerSize - innerPadding).toFloat(), 
+                (y + cornerSize - innerPadding).toFloat(), 
+                innerPaint
+            )
+        }
+    }
+
+    private fun drawLessonInfo(canvas: Canvas, lessonId: String, title: String) {
+        val textPaint = Paint().apply {
+            color = Color.BLACK
+            textSize = 32f
+            textAlign = Paint.Align.CENTER
             isFakeBoldText = true
             isAntiAlias = true
         }
 
+        // Draw lesson ID
         val displayId = lessonId.replace("_", " ").uppercase()
-        canvas.drawText(displayId, MARKER_SIZE / 2f, MARKER_SIZE - 20f, textPaint)
+        canvas.drawText(displayId, MARKER_SIZE / 2f, MARKER_SIZE - 35f, textPaint)
+        
+        // Draw abbreviated title below
+        val titleText = if (title.length > 20) title.take(18) + "..." else title
+        textPaint.textSize = 24f
+        canvas.drawText(titleText, MARKER_SIZE / 2f, MARKER_SIZE - 8f, textPaint)
     }
 
     private suspend fun saveBitmapToStorage(bitmap: Bitmap, fileName: String): MarkerResult = withContext(Dispatchers.IO) {
@@ -215,11 +282,11 @@ class ARMarkerGenerator(private val context: Context) {
                         // Create a temp file from the URI
                         context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
                             val fileDescriptor = pfd.fileDescriptor
-                            val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                            val bmp = BitmapFactory.decodeFileDescriptor(fileDescriptor)
                             // Create a temp file to return
                             val tempFile = File(context.cacheDir, "temp_marker_$lessonId.png")
                             tempFile.outputStream().use { out ->
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                                bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
                             }
                             return tempFile
                         }
@@ -271,11 +338,11 @@ class ARMarkerGenerator(private val context: Context) {
                     try {
                         context.contentResolver.openFileDescriptor(uri, "r")?.use { pfd ->
                             val fileDescriptor = pfd.fileDescriptor
-                            val bitmap = BitmapFactory.decodeFileDescriptor(fileDescriptor)
+                            val bmp = BitmapFactory.decodeFileDescriptor(fileDescriptor)
                             // Create a temp file for each marker
                             val tempFile = File(context.cacheDir, "temp_$fileName")
                             tempFile.outputStream().use { out ->
-                                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+                                bmp.compress(Bitmap.CompressFormat.PNG, 100, out)
                             }
                             markerFiles.add(tempFile)
                         }

@@ -35,9 +35,9 @@ class ARViewerActivity : AppCompatActivity() {
     private var modelNode: ArModelNode? = null
     private lateinit var gestureDetector: GestureDetector
     private var isMarkerMode = false
-    private var augmentedImageDatabase: AugmentedImageDatabase? = null
-    private val trackedImages = mutableMapOf<String, AugmentedImage>()
     private var markerGenerator: ARMarkerGenerator? = null
+    private var isSessionConfigured = false
+    private val trackedImages = mutableMapOf<String, AugmentedImage>()
     
     // Camera permission launcher
     private val requestPermissionLauncher = registerForActivityResult(
@@ -99,63 +99,6 @@ class ARViewerActivity : AppCompatActivity() {
         }
     }
 
-    private fun configureAugmentedImages(session: Session) {
-        try {
-            val database = AugmentedImageDatabase(session)
-            val markerFiles = markerGenerator?.getAllMarkerFiles() ?: emptyList()
-            
-            for (file in markerFiles) {
-                try {
-                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
-                    if (bitmap != null) {
-                        // Extract lesson ID from filename (marker_lessonId.png)
-                        val lessonId = file.nameWithoutExtension.replace("marker_", "")
-                        database.addImage(lessonId, bitmap, 0.1f) // 10cm estimated width
-                        bitmap.recycle()
-                    }
-                } catch (e: Exception) {
-                    // Skip problematic marker files
-                }
-            }
-            
-            augmentedImageDatabase = database
-            
-            // Configure the session with augmented image database
-            val config = Config(session)
-            config.augmentedImageDatabase = database
-            config.focusMode = Config.FocusMode.AUTO
-            config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
-            session.configure(config)
-            
-        } catch (e: Exception) {
-            runOnUiThread {
-                Toast.makeText(this, "Failed to configure markers: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun setupViews() {
-        binding.apply {
-            btnPrevious.setOnClickListener { previousStep() }
-            btnNext.setOnClickListener { nextStep() }
-            btnTakeQuiz.setOnClickListener { startQuiz() }
-            btnHome.setOnClickListener { finish() }
-            btnBookmark.setOnClickListener { toggleBookmark() }
-        }
-    }
-
-    private fun setupViewModel() {
-        // In marker mode, we don't have a lesson yet, so skip setup
-        if (isMarkerMode) return
-        
-        val lessonId = intent.getStringExtra(EXTRA_LESSON_ID) ?: return
-        val progressRepository = ProgressRepository.getInstance(this)
-        val factory = ARViewerViewModelFactory(application, lessonId, progressRepository)
-        viewModel = ViewModelProvider(this, factory)[ARViewerViewModel::class.java]
-
-        setupViewModelObservers()
-    }
-
     private fun setupAR() {
         gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onSingleTapUp(e: MotionEvent): Boolean {
@@ -176,67 +119,108 @@ class ARViewerActivity : AppCompatActivity() {
             false
         }
 
+        // Set up session listener to configure augmented images when session is ready
+        arSceneView.onSessionCreated = { session ->
+            if (isMarkerMode && !isSessionConfigured) {
+                configureAugmentedImages(session)
+                isSessionConfigured = true
+            }
+        }
+
         // Set up AR frame update listener for marker tracking
         if (isMarkerMode) {
             arSceneView.onArFrame = { arFrame ->
-                val session = arFrame.session
-                val frame = arFrame.frame
-                if (augmentedImageDatabase == null) {
-                    configureAugmentedImages(session)
-                }
-                updateAugmentedImages(session, frame)
+                updateAugmentedImages(arFrame)
             }
         }
     }
 
-    private fun updateAugmentedImages(session: Session, frame: Frame) {
-        val updatedImages = frame.getUpdatedTrackables(AugmentedImage::class.java)
-        
-        for (augmentedImage in updatedImages) {
-            when (augmentedImage.trackingState) {
-                TrackingState.TRACKING -> {
-                    val imageIndex = augmentedImage.index
-                    // Get the name we assigned to the image in the database
-                    val name = augmentedImageDatabase?.let { db ->
-                        // The name is associated with the image index
-                        getImageNameByIndex(imageIndex)
-                    }
-                    
-                    if (name != null && !trackedImages.containsKey(name)) {
-                        trackedImages[name] = augmentedImage
-                        runOnUiThread {
-                            onMarkerDetected(name)
-                        }
-                    }
+    private fun configureAugmentedImages(session: Session) {
+        try {
+            val database = AugmentedImageDatabase(session)
+            val markerFiles = markerGenerator?.getAllMarkerFiles() ?: emptyList()
+            
+            if (markerFiles.isEmpty()) {
+                runOnUiThread {
+                    Toast.makeText(this, "No markers found. Please generate markers first.", Toast.LENGTH_LONG).show()
                 }
-                TrackingState.STOPPED -> {
-                    // Find and remove the stopped image
-                    val keysToRemove = mutableListOf<String>()
-                    for ((key, value) in trackedImages) {
-                        if (value == augmentedImage) {
-                            keysToRemove.add(key)
-                        }
+                return
+            }
+            
+            for (file in markerFiles) {
+                try {
+                    val bitmap = BitmapFactory.decodeFile(file.absolutePath)
+                    if (bitmap != null) {
+                        // Extract lesson ID from filename (marker_lessonId.png)
+                        val lessonId = file.nameWithoutExtension.replace("marker_", "")
+                        // Use 0.1f (10cm) as the estimated width - adjust based on expected print size
+                        database.addImage(lessonId, bitmap, 0.1f)
+                        bitmap.recycle()
                     }
-                    for (key in keysToRemove) {
-                        trackedImages.remove(key)
-                    }
+                } catch (e: Exception) {
+                    // Skip problematic marker files
                 }
-                TrackingState.PAUSED -> {
-                    // Handle paused state if needed
-                }
+            }
+            
+            // Configure the session with augmented image database
+            val config = Config(session)
+            config.augmentedImageDatabase = database
+            config.focusMode = Config.FocusMode.AUTO
+            config.updateMode = Config.UpdateMode.LATEST_CAMERA_IMAGE
+            config.planeFindingMode = Config.PlaneFindingMode.DISABLED // Disable plane finding for marker-only mode
+            session.configure(config)
+            
+            runOnUiThread {
+                Toast.makeText(this, "Loaded ${markerFiles.size} markers for scanning", Toast.LENGTH_SHORT).show()
+            }
+            
+        } catch (e: Exception) {
+            runOnUiThread {
+                Toast.makeText(this, "Failed to configure markers: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
-    private fun getImageNameByIndex(index: Int): String? {
-        // We need to map index back to the lesson ID
-        // Since we can't easily get this from the database, we'll use a different approach
-        // by iterating through all markers
-        val markerFiles = markerGenerator?.getAllMarkerFiles() ?: return null
-        if (index >= 0 && index < markerFiles.size) {
-            return markerFiles[index].nameWithoutExtension.replace("marker_", "")
+    private fun updateAugmentedImages(arFrame: io.github.sceneview.ar.ArFrame) {
+        try {
+            val frame = arFrame.frame
+            val session = arFrame.session ?: return
+            
+            val updatedImages = frame.getUpdatedTrackables(AugmentedImage::class.java)
+            
+            for (augmentedImage in updatedImages) {
+                when (augmentedImage.trackingState) {
+                    TrackingState.TRACKING -> {
+                        // Get the name (lesson ID) associated with this image
+                        val name = augmentedImage.name
+                        
+                        if (name != null && name.isNotEmpty() && !trackedImages.containsKey(name)) {
+                            trackedImages[name] = augmentedImage
+                            runOnUiThread {
+                                onMarkerDetected(name)
+                            }
+                        }
+                    }
+                    TrackingState.STOPPED -> {
+                        // Find and remove the stopped image
+                        val keysToRemove = mutableListOf<String>()
+                        for ((key, value) in trackedImages) {
+                            if (value == augmentedImage) {
+                                keysToRemove.add(key)
+                            }
+                        }
+                        for (key in keysToRemove) {
+                            trackedImages.remove(key)
+                        }
+                    }
+                    TrackingState.PAUSED -> {
+                        // Handle paused state if needed
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            // Handle exceptions silently - ARCore may throw if session is not ready
         }
-        return null
     }
 
     private fun onMarkerDetected(lessonId: String) {
