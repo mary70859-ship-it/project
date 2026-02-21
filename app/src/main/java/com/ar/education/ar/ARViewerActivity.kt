@@ -20,9 +20,12 @@ import com.ar.education.databinding.ActivityArViewerBinding
 import com.ar.education.progress.ProgressRepository
 import com.ar.education.ui.QuizActivity
 import com.google.ar.core.*
+import io.github.sceneview.ar.ArSceneView
+import io.github.sceneview.ar.arcore.getHitAtScreenPoint
+import io.github.sceneview.ar.arcore.getRotation
+import io.github.sceneview.ar.arcore.setSession()
 import io.github.sceneview.ar.node.ArModelNode
 import io.github.sceneview.ar.node.PlacementMode
-import io.github.sceneview.ar.ArSceneView
 import kotlinx.coroutines.launch
 
 class ARViewerActivity : AppCompatActivity() {
@@ -103,11 +106,14 @@ class ARViewerActivity : AppCompatActivity() {
         gestureDetector = GestureDetector(this, object : GestureDetector.SimpleOnGestureListener() {
             override fun onSingleTapUp(e: MotionEvent): Boolean {
                 if (modelNode == null && !isMarkerMode) {
-                    val hitResult = arSceneView.hitTest(e.x, e.y)
-                    hitResult?.let {
-                        val session = arSceneView.arSession
-                        val anchor = session?.createAnchor(it.hitPose)
-                        loadModel(anchor)
+                    val frame = arSceneView.currentFrame
+                    val session = arSceneView.arSession
+                    if (frame != null && session != null) {
+                        val hitResult = frame.getHitAtScreenPoint(session, e.x, e.y)
+                        hitResult?.let {
+                            val anchor = session.createAnchor(it.hitPose)
+                            loadModel(anchor)
+                        }
                     }
                 }
                 return true
@@ -119,18 +125,11 @@ class ARViewerActivity : AppCompatActivity() {
             false
         }
 
-        // Set up session listener to configure augmented images when session is ready
+        // Set up session configuration for marker mode
         arSceneView.onSessionCreated = { session ->
             if (isMarkerMode && !isSessionConfigured) {
                 configureAugmentedImages(session)
                 isSessionConfigured = true
-            }
-        }
-
-        // Set up AR frame update listener for marker tracking
-        if (isMarkerMode) {
-            arSceneView.onFrame = { session: Session?, frame: Frame ->
-                updateAugmentedImages(session, frame)
             }
         }
     }
@@ -245,6 +244,23 @@ class ARViewerActivity : AppCompatActivity() {
         Toast.makeText(this, "Marker detected! Loading lesson: $lessonId", Toast.LENGTH_SHORT).show()
     }
     
+    private fun setupViews() {
+        binding.btnPrevious.setOnClickListener { previousStep() }
+        binding.btnNext.setOnClickListener { nextStep() }
+        binding.btnTakeQuiz.setOnClickListener { startQuiz() }
+        binding.btnBookmark.setOnClickListener { toggleBookmark() }
+        binding.btnHome.setOnClickListener { finish() }
+    }
+
+    private fun setupViewModel() {
+        val lessonId = intent.getStringExtra(EXTRA_LESSON_ID)
+        if (!isMarkerMode) {
+            val progressRepository = ProgressRepository.getInstance(this)
+            val factory = ARViewerViewModelFactory(application, lessonId ?: "", progressRepository)
+            viewModel = ViewModelProvider(this, factory)[ARViewerViewModel::class.java]
+        }
+    }
+
     private fun setupViewModelObservers() {
         viewModel.currentLesson.observe(this) { lesson ->
             currentLesson = lesson
@@ -282,17 +298,19 @@ class ARViewerActivity : AppCompatActivity() {
     private fun loadModel(anchor: Anchor? = null) {
         val lesson = currentLesson ?: return
 
-        modelNode?.anchor = anchor
-
         if (modelNode == null) {
             lifecycleScope.launch {
                 try {
-                    val newModelNode = ArModelNode(arSceneView.engine, PlacementMode.INSTANT).apply {
+                    val newModelNode = ArModelNode(
+                        placementMode = PlacementMode.INSTANT,
+                        engine = arSceneView.engine
+                    ).apply {
                         loadModelGlb(
-                            context = this@ARViewerActivity,
-                            glbFileLocation = lesson.modelPath
+                            glbFileLocation = lesson.modelPath,
+                            autoAnimate = true,
+                            autoScale = true
                         )
-                        anchor?.let { this.anchor = it }
+                        anchor?.let { this.anchorNode = it }
                     }
                     modelNode = newModelNode
                     arSceneView.addChild(newModelNode)
