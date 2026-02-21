@@ -178,7 +178,7 @@ class ARViewerActivity : AppCompatActivity() {
 
         // Set up AR frame update listener for marker tracking
         if (isMarkerMode) {
-            arSceneView.onSessionUpdated = { session: Session, frame: Frame ->
+            arSceneView.addOnFrameLifecycleListener { session, frame ->
                 // Configure augmented images when session is first available
                 if (augmentedImageDatabase == null) {
                     configureAugmentedImages(session)
