@@ -84,7 +84,11 @@ class ARViewerActivity : AppCompatActivity() {
             override fun onSingleTapUp(e: MotionEvent): Boolean {
                 if (modelNode == null) {
                     val hitResult = arSceneView.hitTest(e.x, e.y)
-                    hitResult?.let { loadModel(it.anchor) }
+                    hitResult?.let {
+                        val session = arSceneView.session
+                        val anchor = session?.createAnchor(it.hitPose)
+                        loadModel(anchor)
+                    }
                 }
                 return true
             }
