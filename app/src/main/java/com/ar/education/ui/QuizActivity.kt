@@ -3,6 +3,7 @@ package com.ar.education.ui
 import android.os.Bundle
 import android.widget.RadioButton
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import com.ar.education.data.Quiz
@@ -19,6 +20,9 @@ class QuizActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityQuizBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        setupBackButton()
+        setupOnBackPressedHandler()
 
         quizData = intent.getParcelableExtra(EXTRA_QUIZ_DATA, Quiz::class.java)
 
@@ -38,6 +42,20 @@ class QuizActivity : AppCompatActivity() {
 
     private fun setupViews() {
         binding.btnNext.setOnClickListener { nextQuestion() }
+    }
+
+    private fun setupBackButton() {
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun setupOnBackPressedHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
     }
 
     private fun observeViewModel() {

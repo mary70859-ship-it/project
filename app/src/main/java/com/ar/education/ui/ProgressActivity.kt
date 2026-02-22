@@ -1,6 +1,7 @@
 package com.ar.education.ui
 
 import android.os.Bundle
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -20,6 +21,9 @@ class ProgressActivity : AppCompatActivity() {
         binding = ActivityProgressBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupBackButton()
+        setupOnBackPressedHandler()
+
         val progressRepository = ProgressRepository.getInstance(this)
         val factory = ProgressViewModelFactory(progressRepository)
         viewModel = ViewModelProvider(this, factory)[ProgressViewModel::class.java]
@@ -36,6 +40,20 @@ class ProgressActivity : AppCompatActivity() {
         }
         binding.rvProgress.adapter = adapter
         binding.rvProgress.layoutManager = LinearLayoutManager(this)
+    }
+
+    private fun setupBackButton() {
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun setupOnBackPressedHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
     }
 
     private fun observeViewModel() {
