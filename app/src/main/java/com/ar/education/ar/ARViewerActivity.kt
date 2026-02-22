@@ -293,11 +293,8 @@ class ARViewerActivity : AppCompatActivity() {
                 ).apply {
                     parent = arSceneView
                     loadModelGlbAsync(
-                        context = this@ARViewerActivity,
-                        lifecycle = lifecycle,
                         glbFileLocation = lesson.modelPath,
-                        autoAnimate = true,
-                        autoScale = true
+                        autoAnimate = true
                     )
                 }
                 modelNode = newModelNode
@@ -371,9 +368,7 @@ class ARViewerActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        if (::arSceneView.isInitialized) {
-            arSceneView.resume()
-        }
+        // ArSceneView handles its own lifecycle automatically
     }
 
     private fun startAugmentedImageUpdates() {
@@ -387,9 +382,7 @@ class ARViewerActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
-        if (::arSceneView.isInitialized) {
-            arSceneView.pause()
-        }
+        // ArSceneView handles its own lifecycle automatically
     }
 
     override fun onDestroy() {
