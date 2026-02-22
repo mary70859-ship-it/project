@@ -3,6 +3,7 @@ package com.ar.education.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.ar.education.ar.ARViewerActivity
@@ -23,9 +24,26 @@ class LessonDetailActivity : AppCompatActivity() {
         binding = ActivityLessonDetailBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        setupBackButton()
+        setupOnBackPressedHandler()
+
         viewModel.lesson.observe(this) { lesson ->
             lesson?.let { displayLesson(it) }
         }
+    }
+
+    private fun setupBackButton() {
+        binding.btnBack.setOnClickListener {
+            finish()
+        }
+    }
+
+    private fun setupOnBackPressedHandler() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                finish()
+            }
+        })
     }
 
     private fun displayLesson(lesson: Lesson) {
